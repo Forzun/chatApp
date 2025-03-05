@@ -6,18 +6,20 @@ const wss = new ws_1.WebSocketServer({ port: 8080 });
 let userCount = 0;
 let allSocket = [];
 wss.on("connection", (socket) => {
+    console.log("user connect");
     socket.on("message", function (message) {
+        console.log('user want to send message ');
         //@ts-ignore
         const parsedMessage = JSON.parse(message);
         const roomId = (0, utils_1.chatId)();
+        console.log(parsedMessage);
         if (parsedMessage.type == "join") {
             userCount += 1;
-            console.log(parsedMessage);
             allSocket.push({
                 socket,
                 name: parsedMessage.payload.name,
                 room: parsedMessage.payload.roomId,
-                user: userCount
+                // user:userCount
             });
             console.log(allSocket);
         }

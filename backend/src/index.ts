@@ -7,28 +7,29 @@ interface User {
     socket: WebSocket,
     name:string, 
     room:string, 
-    user: number,
 }
 
 let userCount: number = 0;
 
 let allSocket: User[] = []; 
 
-wss.on("connection" , (socket) => {
+wss.on("connection" , (socket) => { 
+    console.log("user connect")
     
     socket.on("message" , function(message){ 
+        console.log('user want to send message ')
         //@ts-ignore
         const parsedMessage = JSON.parse(message);
         const roomId = chatId()
+        console.log(parsedMessage)
 
         if(parsedMessage.type == "join") { 
             userCount += 1;
-            console.log(parsedMessage)
             allSocket.push({ 
                 socket,
-                name:parsedMessage.payload.name, 
+                name:parsedMessage.payload.name,
                 room:parsedMessage.payload.roomId, 
-                user:userCount
+                // user:userCount
             })
             console.log(allSocket)
         }
