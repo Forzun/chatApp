@@ -6,40 +6,47 @@ import { RoomId } from "../utils/RoomeCode";
 const Dashboard = () => {
     const [code , setCode ] = useState("fdas")
     const [hide , setHide] = useState(true);
-    const [text , setText] = useState(false)
-    const [message , setMessage] = useState(["hi there"])
+    const [text , setText] = useState(true)
+    const [message , setMessage] = useState(["hi"])
+    const [sendMessage , setSendMessage]= useState(["hi there"])
     const inputRef = useRef(); 
     const roomCodeRef = useRef();
     const wsRef = useRef();
-
+    const setRef = useRef();
 
     function generateRoomId(){ 
       setHide(false)
       const roomId = RoomId();
       setCode(roomId)
-      console.log(code)
     }
-    
-    console.log
 
+    function socketSender(){ 
+      if(roomCodeRef.current?.value == ""){ 
+        setText(true)
+      }else{ 
+        setText(false)
+      }
+    }
+        
     useEffect(() => { 
       const ws = new WebSocket("http://localhost:8080"); 
       ws.onmessage = (event) => { 
         setMessage(m =>  [...m , event.data])
       }
+      
 
-      console.log(message)
       wsRef.current = ws
 
-      ws.onopen = () => { 
-        ws.send(JSON.stringify({ 
-          type:"join", 
-          payload:{
-            name:"user2",
-            roomId:roomCodeRef.current?.value
-          }
-        }))
-      }
+        ws.onopen = () => { 
+          ws.send(JSON.stringify({ 
+            type:"join", 
+            payload:{
+              name:inputRef.current?.value,
+              roomId:roomCodeRef.current?.value
+            }
+          }))
+        }        
+
     }, [])
 
 
@@ -72,43 +79,59 @@ const Dashboard = () => {
             termporary room that expires after all the users exit
           </p>
         </div>
-        {/* <div className="w-full col-span-2">
+          <div className={`col-span-2 ${text == false ? "hidden": null} `}>
+          <div className="w-full col-span-2">
           <Button onClick={generateRoomId} className="w-full text-lg py-6 cursor-pointer">
             Create New Room
           </Button>
-        </div> */}
-        {/* <div className="col-span-2">
-          <div className="">
+        </div>
+        <div className="col-span-2">
+          <div className="pt-5">
             <Input ref={inputRef} type="text" className="py-5" placeholder="Enter yout name" />
           </div>
           <div className="py-5 flex gap-2 items-center ">
             <Input ref={roomCodeRef} className="py-5" type="text" placeholder="Enter Romm Code" />
-            <Button  size={"lg"} className="text-black cursor-pointer">
+            <Button onClick={socketSender} size={"lg"} className="text-black cursor-pointer">
               Join Room
             </Button>
           </div>
-        </div> */}
-        {/* <div className={`col-span-2 ${hide == true ? "hidden" : null}`}>
+        </div>
+          </div>
+        <div className={`col-span-2 ${hide == true ? "hidden" : null}`}>
           <div className="w-full bg-zinc-800 h-28 flex flex-col items-center justify-center rounded-md">
              <h1 className="text-zinc-400 text-sm">Share this code with your friend</h1>
              <div className="text-2xl text-zinc-300 font-semibold py-2 flex gap-4 items-center ">{code} 
              </div>
           </div>
-        </div> */}
-        <div className="col-span-2 flex flex-col gap-5">
+        </div>
+        <div className={`col-span-2 flex flex-col gap-5 ${text == true ? "hidden" : null}`}>
           <div className="col-span-2">
           <div className="h-14 text-sm text-zinc-400 bg-zinc-800 flex items-center justify-between p-2 rounded-md ">
             <p>Rome Code:{code}</p>
-            <p>User:{""}</p>
+            <p>User:{inputRef.current?.value}</p>
           </div>
           </div>
-          <div className="min-h-96 border border-zinc-800 flex justify-between rounded-md p-3 overflow-auto z-0 ">
-            <div className="text-sm bg-zinc-200 text-zinc-950 h-fit p-2 rounded pl-3">{message}</div>
-            <div></div>
+          <div className="h-96 border border-zinc-800 rounded-md p-3 flex justify-between gap-2 overflow-auto">
+            <div className="w-1/2 flex flex-col gap-2">
+            {message.map(message => <div key={Math.random()} className="text-sm bg-zinc-200 text-zinc-950 h-fit w-fit p-3 rounded pl-5">{message}</div>)}
+            </div>
+            <div className="w-1/2 flex flex-col gap-2 items-end justify-end ">
+              {sendMessage.map(message => <div key={Math.random()} className="text-sm bg-zinc-200 text-zinc-950 h-fit w-fit p-3 rounded pr-5">{message}</div>)}
+            </div>
           </div>
           <div className="flex items-center gap-3">
-              <Input className="py-5" type="text" placeholder="Enter message" />
-              <Button className="cursor-pointer" size={"lg"}>Send</Button>
+              <Input ref={setRef} className="py-5" type="text" placeholder="Enter message" />
+              <Button onClick={() => { 
+                 const refMes = setRef.current?.value;
+                 setSendMessage(prv => [...prv , setRef.current?.value]);
+
+                 wsRef.current.send(JSON.stringify({
+                  type:"chat", 
+                  payload:{
+                    message:refMes
+                  }
+                 }))
+              }} className="cursor-pointer" size={"lg"}>Send</Button>
           </div>
         </div>
       </div>
