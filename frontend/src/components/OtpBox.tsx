@@ -1,5 +1,3 @@
-import React from 'react'
-
 const OtpBox = () => {
   return (
     <div className='w-full bg-zinc-800 h-28 flex flex-col rounded-md'>
