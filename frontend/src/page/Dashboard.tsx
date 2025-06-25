@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { RoomId } from "../utils/RoomeCode";
@@ -7,12 +7,12 @@ const Dashboard = () => {
     const [code , setCode ] = useState("fdas")
     const [hide , setHide] = useState(true);
     const [text , setText] = useState(true)
-    const [message , setMessage] = useState(["hi"])
-    const [sendMessage , setSendMessage]= useState(["hi there"])
-    const inputRef = useRef(); 
-    const roomCodeRef = useRef();
-    const wsRef = useRef();
-    const setRef = useRef();
+    const [message , setMessage] = useState([""])
+    const [sendMessage , setSendMessage]= useState([""])
+    const inputRef = useRef<HTMLInputElement>(null);  
+    const roomCodeRef =  useRef<HTMLInputElement>(null);  
+    const wsRef = useRef<WebSocket>(null);
+    const setRef =  useRef<HTMLInputElement>(null);  
 
     function generateRoomId(){ 
       setHide(false)
@@ -34,8 +34,7 @@ const Dashboard = () => {
         setMessage(m =>  [...m , event.data])
       }
       
-
-      wsRef.current = ws
+      wsRef.current  = ws;
 
         ws.onopen = () => { 
           ws.send(JSON.stringify({ 
@@ -123,9 +122,9 @@ const Dashboard = () => {
               <Input ref={setRef} className="py-5" type="text" placeholder="Enter message" />
               <Button onClick={() => { 
                  const refMes = setRef.current?.value;
-                 setSendMessage(prv => [...prv , setRef.current?.value]);
+                 setSendMessage(prv => [...prv , setRef.current?.value ?? " "]);
 
-                 wsRef.current.send(JSON.stringify({
+                 wsRef.current?.send(JSON.stringify({
                   type:"chat", 
                   payload:{
                     message:refMes
